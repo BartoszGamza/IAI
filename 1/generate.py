@@ -16,6 +16,7 @@ def generate(n, w, s, filename):
   s = int(s)
   with open(filename, "w") as output_file:
     output_writer = csv.writer(output_file, quoting=csv.QUOTE_MINIMAL)
+    output_writer.writerow([n, w, s])
     for _ in range(n):
       output_row = getRandom(n, w, s)
       output_writer.writerow(output_row)
