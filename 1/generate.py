@@ -2,8 +2,6 @@ import sys
 import csv
 import random
 
-print('init')
-
 def getRandom(n, w, s):
   w_i = random.randrange(0, 10*w/n, 1)
   s_i = random.randrange(0, 10*s/n, 1)
