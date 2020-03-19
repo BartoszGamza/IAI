@@ -3,8 +3,11 @@ import csv
 import random
 import numpy as np
 
-POP_SIZE=1000
-TOUR_SIZE=100
+ITERATIONS=5
+POP_SIZE=10
+TOURNAMENT_SIZE=2
+CROSSOVER_RATE=0.5
+MUTATION_RATE=0.01
 
 class Task:
   def __init__(self, w, s, c, config):
@@ -41,6 +44,26 @@ class Individual:
     else:
       return 0
 
+class Population:
+  def __init__(self):
+    self.individuals = []
+
+  def add(self, individual):
+    self.individuals.append(individual)
+
+  def size(self):
+    return len(self.individuals)
+
+  def best(self):
+    best_individual = None
+    best_score = 0
+    for individual in self.individuals:
+      individual_score = individual.evaluate()
+      if individual_score >= best_score:
+        best_score = individual_score
+        best_individual = individual
+    return best_individual
+
 def read(filename):
   w = []
   s = []
@@ -56,37 +79,65 @@ def read(filename):
   return Task(w, s, c, config)
 
 def init_population(task, size):
-  population = []
+  population = Population()
   for _ in range(size):
     chromosome = []
     for _ in range(task.n_items):
       gene = int(random.getrandbits(1))
       chromosome.append(gene)
     individual = Individual(task, chromosome)
-    score = individual.evaluate()
-    if score > 0:
-      print(score, chromosome)
-    population.append(individual)
+
+    population.add(individual)
   return population
 
-def tournament(population, size):
-  selected_for_battle = random.sample(range(0, len(population)), size)
-  print(selected_for_battle)
+def tournament(population, size = TOURNAMENT_SIZE):
+  selected_for_battle = random.sample(range(0, population.size()), size)
   winner = None
   best_score = 0
   for index in selected_for_battle:
-    player = population[index]
+    player = population.individuals[index]
     player_score = player.evaluate()
-    print(player_score)
-    if int(player_score) > int(best_score):
+    if int(player_score) >= int(best_score):
       best_score = player_score
       winner = player
   return winner
 
+def crossover(parent1, parent2, crossover_rate = CROSSOVER_RATE):
+  if random.uniform(0, 1) < crossover_rate:
+    cut = int(len(parent1.chromosome) / 2)
+    new_chromosome = parent1.chromosome[0:cut] + parent2.chromosome[cut:len(parent2.chromosome)]
+    return Individual(parent1.task, new_chromosome)
+  else:
+    return parent1
 
+def mutate(individual, mutation_rate = MUTATION_RATE):
+  new_chromosome = individual.chromosome
+  number_of_genes_to_mutate = int(individual.task.n_items * mutation_rate)
+  selected_for_mutation = random.sample(range(0, len(new_chromosome)), number_of_genes_to_mutate)
+  for index in selected_for_mutation:
+    new_chromosome[index] = int(not new_chromosome[index])
+  return Individual(individual.task, new_chromosome)
+
+
+def genetic_algorithm(task):
+  pop = init_population(task, POP_SIZE)
+  i = 0
+  while i < ITERATIONS:
+    j = 0
+    new_pop = Population()
+    while j < POP_SIZE:
+      parent1 = tournament(pop)
+      parent2 = tournament(pop)
+      child = crossover(parent1, parent2, CROSSOVER_RATE)
+      mutate(child, MUTATION_RATE)
+      new_pop.add(child)
+      j += 1
+    pop = new_pop
+    print("next iteration")
+    i += 1
+  return pop.best().evaluate()
 
 if __name__ == '__main__':
   task = read(*sys.argv[1:])
-  population = init_population(task, POP_SIZE)
-  winner = tournament(population, TOUR_SIZE)
-  print(winner.evaluate())
+  best = genetic_algorithm(task)
+  print(best)
