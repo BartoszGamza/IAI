@@ -26,7 +26,7 @@ class Individual:
   def total_of_parameter(self, parameter):
     total = 0
     for index in range(len(self.chromosome)):
-      if self.chromosome[index]:
+      if bool(self.chromosome[index]):
         total += int(parameter[index])
     return total
 
@@ -45,11 +45,11 @@ class Individual:
       return 0
 
 class Population:
-  def __init__(self):
-    self.individuals = []
+  def __init__(self, individuals = []):
+    self.individuals = individuals
 
   def add(self, individual):
-    self.individuals.append(individual)
+    self.individuals = np.append(self.individuals, individual)
 
   def size(self):
     return len(self.individuals)
@@ -83,10 +83,9 @@ def init_population(task, size):
   for _ in range(size):
     chromosome = []
     for _ in range(task.n_items):
-      gene = int(random.getrandbits(1))
+      gene = random.randrange(0, 1, 1)
       chromosome.append(gene)
     individual = Individual(task, chromosome)
-
     population.add(individual)
   return population
 
