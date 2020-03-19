@@ -119,7 +119,7 @@ def mutate(individual, mutation_rate = MUTATION_RATE):
 
 
 def genetic_algorithm(task, pop_size, iterations, tournament_size, crossover_rate, mutation_rate):
-  pop = init_population(task, pop_size)
+  pop = init_population(task, POP_SIZE)
   i = 0
   while i < iterations:
     j = 0
